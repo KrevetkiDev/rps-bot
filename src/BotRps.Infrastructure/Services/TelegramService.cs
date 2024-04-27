@@ -33,28 +33,28 @@ public class TelegramService : ITelegramService, IHostedService
 
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var message = update.Message;
-        if (message != null)
+        var playerChoice = update.Message;
+        if (playerChoice != null)
         {
-            if (message.Text == "/start")
+            if (playerChoice.Text == "/start")
             {
-                await botClient.SendTextMessageAsync(message.Chat.Id, "Делай ход: к, н, б?");
+                await botClient.SendTextMessageAsync(playerChoice.Chat.Id, "Делай ход: к, н, б?", cancellationToken: cancellationToken);
             }
         
-            if (message.Text == "к" || message.Text == "н" || message.Text == "б")
+            if (playerChoice.Text == "к" || playerChoice.Text == "н" || playerChoice.Text == "б")
             {
-                var messageNew = RpsItemParser.ParseToRps(message.Text);
+                var messageNew = RpsItemParser.ParseToRps(playerChoice.Text);
                 if (messageNew.HasValue)
                 {
                     var result = _gameService.Game(messageNew.Value);
-                    await botClient.SendTextMessageAsync(message.Chat.Id,
-                        $"Бот выбрал: {RpsItemsExtensions.ToRuLetter(result.BotChoice)}. {GameResultTypesExtensions.ToRuString(result.Type)}.  ");
+                    await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
+                        $"Бот выбрал: {RpsItemsExtensions.ToRuLetter(result.BotChoice)}. {GameResultTypesExtensions.ToRuString(result.Type)}.  ", cancellationToken: cancellationToken);
                 }
             }
         }
     }
 
-    private Task PollingErrorHandler(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
+    private Task PollingErrorHandler(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }

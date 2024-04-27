@@ -5,12 +5,13 @@ using BotRps.Application.Models;
 
 namespace BotRps.Infrastructure.Services;
 
+
 public class GameService : IGameService
 {
+    private readonly Random _random = new();
     public GameResult Game(RpsItems playerChoice)
     {
-        Random random = new Random();
-        var botChoice = (RpsItems)random.Next(3);
+        var botChoice = (RpsItems)_random.Next(3);
         var result = new GameResult();
         result.BotChoice = botChoice;
         switch (playerChoice == RpsItems.Rock)
