@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{83D21A4E-88C5-46F9-9CC1-C4BDD3E4902E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C6199D16-1B00-4FE2-BF73-4C18856CC2A9}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRps.Application", "src\BotRps.Application\BotRps.Application.csproj", "{3DBBCD8E-788F-4F74-A158-E4C0AE204204}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRps.Domain", "src\BotRps.Domain\BotRps.Domain.csproj", "{09CFFC68-0C21-48DD-88E2-94C8EAC8E177}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRps.Infrastructure", "src\BotRps.Infrastructure\BotRps.Infrastructure.csproj", "{A7822741-F98C-4240-8A7E-3221F6A5B531}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRps.Bot", "src\BotRps.Bot\BotRps.Bot.csproj", "{3D93964C-959D-4240-A48C-A24356461E0B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3DBBCD8E-788F-4F74-A158-E4C0AE204204} = {83D21A4E-88C5-46F9-9CC1-C4BDD3E4902E}
+		{09CFFC68-0C21-48DD-88E2-94C8EAC8E177} = {83D21A4E-88C5-46F9-9CC1-C4BDD3E4902E}
+		{A7822741-F98C-4240-8A7E-3221F6A5B531} = {83D21A4E-88C5-46F9-9CC1-C4BDD3E4902E}
+		{3D93964C-959D-4240-A48C-A24356461E0B} = {83D21A4E-88C5-46F9-9CC1-C4BDD3E4902E}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3DBBCD8E-788F-4F74-A158-E4C0AE204204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DBBCD8E-788F-4F74-A158-E4C0AE204204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DBBCD8E-788F-4F74-A158-E4C0AE204204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DBBCD8E-788F-4F74-A158-E4C0AE204204}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09CFFC68-0C21-48DD-88E2-94C8EAC8E177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09CFFC68-0C21-48DD-88E2-94C8EAC8E177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09CFFC68-0C21-48DD-88E2-94C8EAC8E177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09CFFC68-0C21-48DD-88E2-94C8EAC8E177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7822741-F98C-4240-8A7E-3221F6A5B531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7822741-F98C-4240-8A7E-3221F6A5B531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7822741-F98C-4240-8A7E-3221F6A5B531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7822741-F98C-4240-8A7E-3221F6A5B531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D93964C-959D-4240-A48C-A24356461E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D93964C-959D-4240-A48C-A24356461E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D93964C-959D-4240-A48C-A24356461E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D93964C-959D-4240-A48C-A24356461E0B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
