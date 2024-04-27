@@ -8,9 +8,9 @@ public class RpsItemParser
     {
         return playerMessage switch
         {
-            "к" => RpsItems.Rock,
-            "н" => RpsItems.Scissors,
-            "б" => RpsItems.Paper,
+            "\ud83e\udea8" => RpsItems.Rock,
+            "\u2702\ufe0f" => RpsItems.Scissors,
+            "\ud83d\udcc4" => RpsItems.Paper,
             _ => null
         };
     }
