@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>BotRpc.Bot</RootNamespace>
+        <UserSecretsId>f623ca8f-4cbd-405a-8e0d-43fc2eef7001</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
