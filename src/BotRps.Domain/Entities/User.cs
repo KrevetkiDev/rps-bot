@@ -1,0 +1,9 @@
+﻿using BotRpc.Domain.Entities.Base;
+
+namespace BotRpc.Domain.Entities;
+
+public class User : EntityBase
+{
+    public long TelegramId { get; set; }
+    public int Balance { get; set; } = 100;
+}

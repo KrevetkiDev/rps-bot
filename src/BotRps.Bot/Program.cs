@@ -1,6 +1,8 @@
 using BotRps.Application.Interfaces;
 using BotRps.Infrastructure.Options;
+using BotRps.Infrastructure.Persistence;
 using BotRps.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
@@ -16,6 +18,8 @@ builder.Services.AddOptions<TelegramOptions>()
 builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ITelegramService, TelegramService>();
 builder.Services.AddHostedService<TelegramService>(p => (p.GetRequiredService<ITelegramService>() as TelegramService)!);
+builder.Services.AddDbContext<DatabaseContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 
 var app = builder.Build();
