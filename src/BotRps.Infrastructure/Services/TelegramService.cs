@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+
 
 namespace BotRps.Infrastructure.Services;
 
@@ -34,27 +36,42 @@ public class TelegramService : ITelegramService, IHostedService
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         var playerChoice = update.Message;
+        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
+        {
+            new KeyboardButton[] { RpsItems.Rock.ToEmoji() },
+            new KeyboardButton[] { RpsItems.Scissors.ToEmoji() },
+            new KeyboardButton[] { RpsItems.Paper.ToEmoji() }
+        })
+        {
+            ResizeKeyboard = true
+        };
+
         if (playerChoice != null)
         {
             if (playerChoice.Text == "/start")
             {
-                await botClient.SendTextMessageAsync(playerChoice.Chat.Id, "Делай ход: к, н, б?", cancellationToken: cancellationToken);
+                await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
+                    $"Делай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji() }, { RpsItems.Paper.ToEmoji() }?", cancellationToken: cancellationToken);
             }
-        
-            if (playerChoice.Text == "к" || playerChoice.Text == "н" || playerChoice.Text == "б")
+
+            if (playerChoice.Text == RpsItems.Rock.ToEmoji() || playerChoice.Text ==  RpsItems.Scissors.ToEmoji()  ||
+                playerChoice.Text ==  RpsItems.Paper.ToEmoji() )
             {
                 var messageNew = RpsItemParser.ParseToRps(playerChoice.Text);
                 if (messageNew.HasValue)
                 {
                     var result = _gameService.Game(messageNew.Value);
                     await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
-                        $"Бот выбрал: {RpsItemsExtensions.ToRuLetter(result.BotChoice)}. {GameResultTypesExtensions.ToRuString(result.Type)}.  ", cancellationToken: cancellationToken);
+                        $"{RpsItemsExtensions.ToEmoji(result.BotChoice)}", cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
+                        $"{GameResultTypesExtensions.ToRuString(result.Type)}", cancellationToken: cancellationToken);
                 }
             }
         }
     }
 
-    private Task PollingErrorHandler(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    private Task PollingErrorHandler(ITelegramBotClient botClient, Exception exception,
+        CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
