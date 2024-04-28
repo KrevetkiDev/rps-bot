@@ -1,4 +1,5 @@
-﻿using BotRps.Application;
+﻿using BotRpc.Domain.Enums;
+using BotRps.Application;
 using BotRps.Application.Extensions;
 using BotRps.Application.Interfaces;
 using BotRps.Infrastructure.Options;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+
 
 namespace BotRps.Infrastructure.Services;
 
@@ -36,9 +38,9 @@ public class TelegramService : ITelegramService, IHostedService
         var playerChoice = update.Message;
         ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
         {
-            new KeyboardButton[] { "\ud83e\udea8" },
-            new KeyboardButton[] { "\u2702\ufe0f" },
-            new KeyboardButton[] { "\ud83d\udcc4" }
+            new KeyboardButton[] { RpsItems.Rock.ToEmoji() },
+            new KeyboardButton[] { RpsItems.Scissors.ToEmoji() },
+            new KeyboardButton[] { RpsItems.Paper.ToEmoji() }
         })
         {
             ResizeKeyboard = true
@@ -49,18 +51,18 @@ public class TelegramService : ITelegramService, IHostedService
             if (playerChoice.Text == "/start")
             {
                 await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
-                    "Делай ход: \ud83e\udea8, \u2702\ufe0f, \ud83d\udcc4?", cancellationToken: cancellationToken);
+                    $"Делай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji() }, { RpsItems.Paper.ToEmoji() }?", cancellationToken: cancellationToken);
             }
 
-            if (playerChoice.Text == "\ud83e\udea8" || playerChoice.Text == "\u2702\ufe0f" ||
-                playerChoice.Text == "\ud83d\udcc4")
+            if (playerChoice.Text == RpsItems.Rock.ToEmoji() || playerChoice.Text ==  RpsItems.Scissors.ToEmoji()  ||
+                playerChoice.Text ==  RpsItems.Paper.ToEmoji() )
             {
                 var messageNew = RpsItemParser.ParseToRps(playerChoice.Text);
                 if (messageNew.HasValue)
                 {
                     var result = _gameService.Game(messageNew.Value);
                     await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
-                        $"{RpsItemsExtensions.ToButton(result.BotChoice)}", cancellationToken: cancellationToken);
+                        $"{RpsItemsExtensions.ToEmoji(result.BotChoice)}", cancellationToken: cancellationToken);
                     await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
                         $"{GameResultTypesExtensions.ToRuString(result.Type)}", cancellationToken: cancellationToken);
                 }

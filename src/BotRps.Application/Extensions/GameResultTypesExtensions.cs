@@ -2,9 +2,9 @@
 
 namespace BotRps.Application.Extensions;
 
-public class GameResultTypesExtensions
+public static class GameResultTypesExtensions
 {
-    public static string ToRuString(GameResultTypes item)
+    public static string ToRuString(this GameResultTypes item)
     {
         return item switch
         {

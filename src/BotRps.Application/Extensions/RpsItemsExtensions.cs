@@ -2,9 +2,9 @@
 
 namespace BotRps.Application.Extensions;
 
-public class RpsItemsExtensions
+public static class RpsItemsExtensions
 {
-    public static string ToButton(RpsItems item)
+    public static string ToEmoji(this RpsItems item)
     {
         return item switch
         {
