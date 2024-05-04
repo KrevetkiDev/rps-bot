@@ -5,5 +5,5 @@ namespace BotRpc.Domain.Entities;
 public class User : EntityBase
 {
     public long TelegramId { get; set; }
-    public int Balance { get; set; } = 100;
+    public int Balance { get; set; }
 }

@@ -18,7 +18,7 @@ builder.Services.AddOptions<TelegramOptions>()
 builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ITelegramService, TelegramService>();
 builder.Services.AddHostedService<TelegramService>(p => (p.GetRequiredService<ITelegramService>() as TelegramService)!);
-builder.Services.AddDbContext<DatabaseContext>(options =>
+builder.Services.AddDbContextFactory<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
 

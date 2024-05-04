@@ -3,12 +3,13 @@ using BotRps.Application;
 using BotRps.Application.Extensions;
 using BotRps.Application.Interfaces;
 using BotRps.Infrastructure.Options;
+using BotRps.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-
 
 namespace BotRps.Infrastructure.Services;
 
@@ -16,11 +17,14 @@ public class TelegramService : ITelegramService, IHostedService
 {
     private readonly ITelegramBotClient _client;
     private readonly IGameService _gameService;
+    private readonly IDbContextFactory<DatabaseContext> _dbContextFactory;
 
-    public TelegramService(IOptions<TelegramOptions> options, IGameService gameService)
+    public TelegramService(IOptions<TelegramOptions> options, IGameService gameService,
+        IDbContextFactory<DatabaseContext> dbContextFactory)
     {
         _client = new TelegramBotClient(options.Value.Token);
         _gameService = gameService;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -50,12 +54,27 @@ public class TelegramService : ITelegramService, IHostedService
         {
             if (playerChoice.Text == "/start")
             {
+                var userId = playerChoice.From.Id;
+                using (var dbContext = _dbContextFactory.CreateDbContext())
+                {
+                    if (!dbContext.Users.Any(x => x.TelegramId == userId))
+                    {
+                        dbContext.Users.Add(new()
+                        {
+                            Balance = 100,
+                            TelegramId = userId
+                        });
+                        dbContext.SaveChanges();
+                    }
+                }
+
                 await botClient.SendTextMessageAsync(playerChoice.Chat.Id,
-                    $"Делай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji() }, { RpsItems.Paper.ToEmoji() }?", cancellationToken: cancellationToken);
+                    $"Делай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}?",
+                    cancellationToken: cancellationToken);
             }
 
-            if (playerChoice.Text == RpsItems.Rock.ToEmoji() || playerChoice.Text ==  RpsItems.Scissors.ToEmoji()  ||
-                playerChoice.Text ==  RpsItems.Paper.ToEmoji() )
+            if (playerChoice.Text == RpsItems.Rock.ToEmoji() || playerChoice.Text == RpsItems.Scissors.ToEmoji() ||
+                playerChoice.Text == RpsItems.Paper.ToEmoji())
             {
                 var messageNew = RpsItemParser.ParseToRps(playerChoice.Text);
                 if (messageNew.HasValue)
