@@ -124,7 +124,7 @@ public class TelegramService : ITelegramService, IHostedService
         }
 
         await _client.SendTextMessageAsync(message.Chat.Id,
-            $"Текущая ставка: {dbContext.Users.First(x => x.TelegramId == telegramId).Bet}. Для изменения сделайте выбор в меню слева\nДелайте ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+            $"Текущая ставка: {dbContext.Users.First(x => x.TelegramId == telegramId).Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
             replyMarkup: _keyboard,
             cancellationToken: cancellationToken);
     }
@@ -137,7 +137,14 @@ public class TelegramService : ITelegramService, IHostedService
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
         if (user.Balance == 0)
         {
-            await _client.SendTextMessageAsync(message.Chat.Id, $"Вам не на что играть.",
+            await _client.SendTextMessageAsync(message.Chat.Id, $"Тебе не на что играть.",
+                cancellationToken: cancellationToken);
+            return;
+        }
+
+        if (user.Bet == 0)
+        {
+            await _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть равна нулю.",
                 cancellationToken: cancellationToken);
             return;
         }
@@ -158,12 +165,12 @@ public class TelegramService : ITelegramService, IHostedService
             if (result.Type == GameResultTypes.PlayerWin)
             {
                 user.Balance += user.Bet;
-                if (user.Bet > user.Balance)
+                if (user.Bet > user.Balance && user.Balance > 0)
                 {
                     user.Bet = user.Balance;
 
                     await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Ваша ставка установлена до баланса, чтобы вы могли продолжить игру. Текущая ставка: {user.Bet}",
+                        $"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: {user.Bet}",
                         cancellationToken: cancellationToken);
                 }
 
@@ -172,7 +179,7 @@ public class TelegramService : ITelegramService, IHostedService
                 if (user.Balance == 0)
                 {
                     await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Ваш баланс равен нулю, вы проиграли все деньги. ",
+                        $"Твой баланс равен нулю, ты проиграл все деньги. ",
                         cancellationToken: cancellationToken);
                 }
             }
@@ -186,7 +193,7 @@ public class TelegramService : ITelegramService, IHostedService
                     user.Bet = user.Balance;
 
                     await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Ваша ставка установлена до баланса, чтобы вы могли продолжить игру. Текущая ставка: {user.Bet}",
+                        $"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: {user.Bet}",
                         cancellationToken: cancellationToken);
                 }
 
@@ -195,7 +202,7 @@ public class TelegramService : ITelegramService, IHostedService
                 if (user.Balance == 0)
                 {
                     await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Ваш баланс равен нулю, вы проиграли все деньги. ",
+                        $"Твой баланс равен нулю, ты проиграл все деньги. ",
                         cancellationToken: cancellationToken);
                 }
             }
@@ -208,7 +215,7 @@ public class TelegramService : ITelegramService, IHostedService
 
         using var dbContext = _dbContextFactory.CreateDbContext();
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Ваш баланс: {user.Balance}. Ваша ставка {user.Bet}",
+        await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user.Balance}. Твоя ставка {user.Bet}",
             cancellationToken: cancellationToken);
     }
 
