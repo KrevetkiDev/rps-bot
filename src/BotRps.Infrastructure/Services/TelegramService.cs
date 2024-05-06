@@ -18,6 +18,8 @@ public class TelegramService : ITelegramService, IHostedService
     private readonly ITelegramBotClient _client;
     private readonly IGameService _gameService;
     private readonly IDbContextFactory<DatabaseContext> _dbContextFactory;
+    private readonly ResetBalanceOptions _resetBalanceOptions;
+
     private const string Balance = "\ud83d\udcb2";
     private const string BetUpCommand = "/bet_up";
     private const string BetDownCommand = "/bet_down";
@@ -48,11 +50,12 @@ public class TelegramService : ITelegramService, IHostedService
     };
 
     public TelegramService(IOptions<TelegramOptions> options, IGameService gameService,
-        IDbContextFactory<DatabaseContext> dbContextFactory)
+        IDbContextFactory<DatabaseContext> dbContextFactory, IOptions<ResetBalanceOptions> resetBalanceOptions)
     {
         _client = new TelegramBotClient(options.Value.Token);
         _gameService = gameService;
         _dbContextFactory = dbContextFactory;
+        _resetBalanceOptions = resetBalanceOptions.Value;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -137,7 +140,8 @@ public class TelegramService : ITelegramService, IHostedService
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
         if (user.Balance == 0)
         {
-            await _client.SendTextMessageAsync(message.Chat.Id, $"Тебе не на что играть.",
+            await _client.SendTextMessageAsync(message.Chat.Id,
+                $"Тебе не на что играть.  Баланс обновится в {_resetBalanceOptions.ResetTime} ",
                 cancellationToken: cancellationToken);
             return;
         }
@@ -175,13 +179,6 @@ public class TelegramService : ITelegramService, IHostedService
                 }
 
                 dbContext.SaveChanges();
-
-                if (user.Balance == 0)
-                {
-                    await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Твой баланс равен нулю, ты проиграл все деньги. ",
-                        cancellationToken: cancellationToken);
-                }
             }
 
             if (result.Type == GameResultTypes.BotWin)
@@ -202,7 +199,7 @@ public class TelegramService : ITelegramService, IHostedService
                 if (user.Balance == 0)
                 {
                     await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Твой баланс равен нулю, ты проиграл все деньги. ",
+                        $"Твой баланс равен нулю, ты проиграл все деньги. Баланс обновится в {_resetBalanceOptions.ResetTime}",
                         cancellationToken: cancellationToken);
                 }
             }
@@ -228,14 +225,15 @@ public class TelegramService : ITelegramService, IHostedService
 
         if (user.Bet >= user.Balance)
         {
-            _client.SendTextMessageAsync(message.Chat.Id, $"Ты не можешь поставить больше чем у тебя есть! ",
+            await _client.SendTextMessageAsync(message.Chat.Id, $"Ты не можешь поставить больше чем у тебя есть!",
                 cancellationToken: cancellationToken);
             return;
         }
 
         user.Bet += 10;
         dbContext.SaveChanges();
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\n Делай ход!");
+        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
+            cancellationToken: cancellationToken);
     }
 
     private async Task OnBetDown(Message message, CancellationToken cancellationToken)
@@ -247,13 +245,14 @@ public class TelegramService : ITelegramService, IHostedService
 
         if (user.Bet <= 10)
         {
-            _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть меньше или равна нулю! ",
+            await _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть меньше или равна нулю! ",
                 cancellationToken: cancellationToken);
             return;
         }
 
         user.Bet -= 10;
         dbContext.SaveChanges();
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\n Делай ход!");
+        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
+            cancellationToken: cancellationToken);
     }
 }

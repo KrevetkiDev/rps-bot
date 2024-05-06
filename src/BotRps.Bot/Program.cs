@@ -14,10 +14,15 @@ builder.Configuration
 
 builder.Services.AddOptions<TelegramOptions>()
     .Bind(builder.Configuration.GetSection("TelegramOptions"));
+builder.Services.AddOptions<ResetBalanceOptions>()
+    .Bind(builder.Configuration.GetSection("ResetBalanceOptions"));
 
 builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ITelegramService, TelegramService>();
+builder.Services.AddSingleton<IResetBalanceService, ResetBalanceService>();
 builder.Services.AddHostedService<TelegramService>(p => (p.GetRequiredService<ITelegramService>() as TelegramService)!);
+builder.Services.AddHostedService<ResetBalanceService>(p =>
+    (p.GetRequiredService<IResetBalanceService>() as ResetBalanceService)!);
 builder.Services.AddDbContextFactory<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
