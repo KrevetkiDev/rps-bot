@@ -141,7 +141,7 @@ public class TelegramService : ITelegramService, IHostedService
         if (user.Balance == 0)
         {
             await _client.SendTextMessageAsync(message.Chat.Id,
-                $"Тебе не на что играть.  Баланс обновится в {_resetBalanceOptions.ResetTime} ",
+                $"Тебе не на что играть. Баланс обновится в {_resetBalanceOptions.ResetTime}",
                 cancellationToken: cancellationToken);
             return;
         }
