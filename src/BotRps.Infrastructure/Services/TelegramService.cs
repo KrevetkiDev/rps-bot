@@ -169,14 +169,6 @@ public class TelegramService : ITelegramService, IHostedService
             if (result.Type == GameResultTypes.PlayerWin)
             {
                 user.Balance += user.Bet;
-                if (user.Bet > user.Balance)
-                {
-                    user.Bet = user.Balance;
-
-                    await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: {user.Bet}",
-                        cancellationToken: cancellationToken);
-                }
 
                 dbContext.SaveChanges();
             }
