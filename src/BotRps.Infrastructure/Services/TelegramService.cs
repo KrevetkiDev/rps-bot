@@ -169,7 +169,7 @@ public class TelegramService : ITelegramService, IHostedService
             if (result.Type == GameResultTypes.PlayerWin)
             {
                 user.Balance += user.Bet;
-                if (user.Bet > user.Balance && user.Balance > 0)
+                if (user.Bet > user.Balance)
                 {
                     user.Bet = user.Balance;
 
@@ -185,7 +185,7 @@ public class TelegramService : ITelegramService, IHostedService
             {
                 user.Balance -= user.Bet;
 
-                if (user.Bet > user.Balance)
+                if (user.Bet > user.Balance && user.Balance > 0)
                 {
                     user.Bet = user.Balance;
 
@@ -223,7 +223,7 @@ public class TelegramService : ITelegramService, IHostedService
         using var dbContext = _dbContextFactory.CreateDbContext();
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
 
-        if (user.Bet >= user.Balance)
+        if (user.Bet == user.Balance)
         {
             await _client.SendTextMessageAsync(message.Chat.Id, $"Ты не можешь поставить больше чем у тебя есть!",
                 cancellationToken: cancellationToken);

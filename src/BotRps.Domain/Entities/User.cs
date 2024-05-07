@@ -6,6 +6,5 @@ public class User : EntityBase
 {
     public long TelegramId { get; set; }
     public int Balance { get; set; }
-
     public int Bet { get; set; }
 }
