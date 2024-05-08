@@ -21,6 +21,8 @@ public class TelegramService : ITelegramService, IHostedService
     private readonly ResetBalanceOptions _resetBalanceOptions;
 
     private const string Balance = "\ud83d\udcb2";
+    private const string Rating = "\ud83c\udfc6";
+
     private const string BetUpCommand = "/bet_up";
     private const string BetDownCommand = "/bet_down";
 
@@ -29,7 +31,8 @@ public class TelegramService : ITelegramService, IHostedService
         new KeyboardButton[] { RpsItems.Rock.ToEmoji() },
         new KeyboardButton[] { RpsItems.Scissors.ToEmoji() },
         new KeyboardButton[] { RpsItems.Paper.ToEmoji() },
-        new KeyboardButton[] { Balance }
+        new KeyboardButton[] { Balance },
+        new KeyboardButton[] { Rating }
     })
     {
         ResizeKeyboard = true
@@ -101,6 +104,11 @@ public class TelegramService : ITelegramService, IHostedService
             {
                 await OnBetDown(message, cancellationToken);
             }
+
+            if (message.Text == Rating)
+            {
+                await OnShowRating(message, cancellationToken);
+            }
         }
     }
 
@@ -121,7 +129,8 @@ public class TelegramService : ITelegramService, IHostedService
             {
                 Balance = 100,
                 TelegramId = telegramId,
-                Bet = 10
+                Bet = 10,
+                Nickname = message.From.Username
             });
             dbContext.SaveChanges();
         }
@@ -246,5 +255,22 @@ public class TelegramService : ITelegramService, IHostedService
         dbContext.SaveChanges();
         await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
             cancellationToken: cancellationToken);
+    }
+
+    private async Task OnShowRating(Message message, CancellationToken cancellationToken)
+    {
+        var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var allUsers = dbContext.Users.OrderBy(x => x.Balance).Take(10).ToList();
+        string usersTopList = null;
+        for (int i = 1; i <= allUsers.Count; i++)
+        {
+            var userName = allUsers[i - 1].Nickname;
+            var userBalance = allUsers[i - 1].Balance.ToString();
+            var number = i.ToString();
+            var userString = number + ". " + "@" + userName + " - " + userBalance + "\n";
+            usersTopList += userString;
+        }
+
+        await _client.SendTextMessageAsync(message.Chat.Id, usersTopList, cancellationToken: cancellationToken);
     }
 }
