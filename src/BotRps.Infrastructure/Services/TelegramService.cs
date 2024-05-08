@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using User = BotRpc.Domain.Entities.User;
 
 namespace BotRps.Infrastructure.Services;
 
@@ -133,20 +134,21 @@ public class TelegramService : ITelegramService, IHostedService
         using var dbContext = _dbContextFactory.CreateDbContext();
         if (!dbContext.Users.Any(x => x.TelegramId == telegramId))
         {
-            dbContext.Users.Add(new()
+            var user = new User()
             {
                 Balance = 100,
                 TelegramId = telegramId,
                 Bet = 10,
                 Nickname = message.From.Username
-            });
+            };
+            dbContext.Users.Add(user);
             dbContext.SaveChanges();
-        }
 
-        await _client.SendTextMessageAsync(message.Chat.Id,
-            $"Текущая ставка: {dbContext.Users.AsNoTracking().First(x => x.TelegramId == telegramId).Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
-            replyMarkup: _keyboard,
-            cancellationToken: cancellationToken);
+            await _client.SendTextMessageAsync(message.Chat.Id,
+                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+                replyMarkup: _keyboard,
+                cancellationToken: cancellationToken);
+        }
     }
 
     private async Task OnRpsItem(Message message, CancellationToken cancellationToken)
@@ -220,7 +222,7 @@ public class TelegramService : ITelegramService, IHostedService
         var telegramId = message.From.Id;
 
         using var dbContext = _dbContextFactory.CreateDbContext();
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
+        var user = dbContext.Users.AsNoTracking().FirstOrDefault(x => x.TelegramId == telegramId);
         await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user.Balance}. Твоя ставка {user.Bet}",
             cancellationToken: cancellationToken);
     }
