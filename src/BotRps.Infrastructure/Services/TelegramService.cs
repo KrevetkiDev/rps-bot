@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+using User = BotRpc.Domain.Entities.User;
 
 namespace BotRps.Infrastructure.Services;
 
@@ -21,6 +22,8 @@ public class TelegramService : ITelegramService, IHostedService
     private readonly ResetBalanceOptions _resetBalanceOptions;
 
     private const string Balance = "\ud83d\udcb2";
+    private const string Rating = "\ud83c\udfc6";
+
     private const string BetUpCommand = "/bet_up";
     private const string BetDownCommand = "/bet_down";
 
@@ -29,7 +32,8 @@ public class TelegramService : ITelegramService, IHostedService
         new KeyboardButton[] { RpsItems.Rock.ToEmoji() },
         new KeyboardButton[] { RpsItems.Scissors.ToEmoji() },
         new KeyboardButton[] { RpsItems.Paper.ToEmoji() },
-        new KeyboardButton[] { Balance }
+        new KeyboardButton[] { Balance },
+        new KeyboardButton[] { Rating }
     })
     {
         ResizeKeyboard = true
@@ -71,36 +75,49 @@ public class TelegramService : ITelegramService, IHostedService
 
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var message = update.Message;
-
-        if (message != null)
+        try
         {
-            if (message.Text == "/start")
-            {
-                await OnStart(message, cancellationToken);
-            }
+            var message = update.Message;
 
-            if (message.Text == RpsItems.Rock.ToEmoji() ||
-                message.Text == RpsItems.Scissors.ToEmoji() ||
-                message.Text == RpsItems.Paper.ToEmoji())
+            if (message != null)
             {
-                await OnRpsItem(message, cancellationToken);
-            }
+                if (message.Text == "/start")
+                {
+                    await OnStart(message, cancellationToken);
+                }
 
-            if (message.Text == Balance)
-            {
-                await OnBalance(message, cancellationToken);
-            }
+                if (message.Text == RpsItems.Rock.ToEmoji() ||
+                    message.Text == RpsItems.Scissors.ToEmoji() ||
+                    message.Text == RpsItems.Paper.ToEmoji())
+                {
+                    await OnRpsItem(message, cancellationToken);
+                }
 
-            if (message.Text == BetUpCommand)
-            {
-                await OnBetUp(message, cancellationToken);
-            }
+                if (message.Text == Balance)
+                {
+                    await OnBalance(message, cancellationToken);
+                }
 
-            if (message.Text == BetDownCommand)
-            {
-                await OnBetDown(message, cancellationToken);
+                if (message.Text == BetUpCommand)
+                {
+                    await OnBetUp(message, cancellationToken);
+                }
+
+                if (message.Text == BetDownCommand)
+                {
+                    await OnBetDown(message, cancellationToken);
+                }
+
+                if (message.Text == Rating)
+                {
+                    await OnShowRating(message, cancellationToken);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 
@@ -117,19 +134,21 @@ public class TelegramService : ITelegramService, IHostedService
         using var dbContext = _dbContextFactory.CreateDbContext();
         if (!dbContext.Users.Any(x => x.TelegramId == telegramId))
         {
-            dbContext.Users.Add(new()
+            var user = new User()
             {
                 Balance = 100,
                 TelegramId = telegramId,
-                Bet = 10
-            });
+                Bet = 10,
+                Nickname = message.From.Username
+            };
+            dbContext.Users.Add(user);
             dbContext.SaveChanges();
-        }
 
-        await _client.SendTextMessageAsync(message.Chat.Id,
-            $"Текущая ставка: {dbContext.Users.First(x => x.TelegramId == telegramId).Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
-            replyMarkup: _keyboard,
-            cancellationToken: cancellationToken);
+            await _client.SendTextMessageAsync(message.Chat.Id,
+                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+                replyMarkup: _keyboard,
+                cancellationToken: cancellationToken);
+        }
     }
 
     private async Task OnRpsItem(Message message, CancellationToken cancellationToken)
@@ -203,7 +222,7 @@ public class TelegramService : ITelegramService, IHostedService
         var telegramId = message.From.Id;
 
         using var dbContext = _dbContextFactory.CreateDbContext();
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
+        var user = dbContext.Users.AsNoTracking().FirstOrDefault(x => x.TelegramId == telegramId);
         await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user.Balance}. Твоя ставка {user.Bet}",
             cancellationToken: cancellationToken);
     }
@@ -246,5 +265,20 @@ public class TelegramService : ITelegramService, IHostedService
         dbContext.SaveChanges();
         await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
             cancellationToken: cancellationToken);
+    }
+
+    private async Task OnShowRating(Message message, CancellationToken cancellationToken)
+    {
+        var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var topUsers = dbContext.Users.AsNoTracking().OrderByDescending(x => x.Balance).Take(10).ToList();
+        string usersTopList = null;
+        for (int i = 0; i < topUsers.Count; i++)
+        {
+            var user = topUsers[i];
+            var userString = $"{i + 1}. @{user.Nickname} - {user.Balance}\n";
+            usersTopList += userString;
+        }
+
+        await _client.SendTextMessageAsync(message.Chat.Id, usersTopList, cancellationToken: cancellationToken);
     }
 }
