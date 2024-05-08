@@ -74,41 +74,49 @@ public class TelegramService : ITelegramService, IHostedService
 
     private async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var message = update.Message;
-
-        if (message != null)
+        try
         {
-            if (message.Text == "/start")
-            {
-                await OnStart(message, cancellationToken);
-            }
+            var message = update.Message;
 
-            if (message.Text == RpsItems.Rock.ToEmoji() ||
-                message.Text == RpsItems.Scissors.ToEmoji() ||
-                message.Text == RpsItems.Paper.ToEmoji())
+            if (message != null)
             {
-                await OnRpsItem(message, cancellationToken);
-            }
+                if (message.Text == "/start")
+                {
+                    await OnStart(message, cancellationToken);
+                }
 
-            if (message.Text == Balance)
-            {
-                await OnBalance(message, cancellationToken);
-            }
+                if (message.Text == RpsItems.Rock.ToEmoji() ||
+                    message.Text == RpsItems.Scissors.ToEmoji() ||
+                    message.Text == RpsItems.Paper.ToEmoji())
+                {
+                    await OnRpsItem(message, cancellationToken);
+                }
 
-            if (message.Text == BetUpCommand)
-            {
-                await OnBetUp(message, cancellationToken);
-            }
+                if (message.Text == Balance)
+                {
+                    await OnBalance(message, cancellationToken);
+                }
 
-            if (message.Text == BetDownCommand)
-            {
-                await OnBetDown(message, cancellationToken);
-            }
+                if (message.Text == BetUpCommand)
+                {
+                    await OnBetUp(message, cancellationToken);
+                }
 
-            if (message.Text == Rating)
-            {
-                await OnShowRating(message, cancellationToken);
+                if (message.Text == BetDownCommand)
+                {
+                    await OnBetDown(message, cancellationToken);
+                }
+
+                if (message.Text == Rating)
+                {
+                    await OnShowRating(message, cancellationToken);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 
@@ -136,7 +144,7 @@ public class TelegramService : ITelegramService, IHostedService
         }
 
         await _client.SendTextMessageAsync(message.Chat.Id,
-            $"Текущая ставка: {dbContext.Users.First(x => x.TelegramId == telegramId).Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+            $"Текущая ставка: {dbContext.Users.AsNoTracking().First(x => x.TelegramId == telegramId).Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
             replyMarkup: _keyboard,
             cancellationToken: cancellationToken);
     }
@@ -260,14 +268,12 @@ public class TelegramService : ITelegramService, IHostedService
     private async Task OnShowRating(Message message, CancellationToken cancellationToken)
     {
         var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var allUsers = dbContext.Users.OrderBy(x => x.Balance).Take(10).ToList();
+        var topUsers = dbContext.Users.AsNoTracking().OrderByDescending(x => x.Balance).Take(10).ToList();
         string usersTopList = null;
-        for (int i = 1; i <= allUsers.Count; i++)
+        for (int i = 0; i < topUsers.Count; i++)
         {
-            var userName = allUsers[i - 1].Nickname;
-            var userBalance = allUsers[i - 1].Balance.ToString();
-            var number = i.ToString();
-            var userString = number + ". " + "@" + userName + " - " + userBalance + "\n";
+            var user = topUsers[i];
+            var userString = $"{i + 1}. @{user.Nickname} - {user.Balance}\n";
             usersTopList += userString;
         }
 
