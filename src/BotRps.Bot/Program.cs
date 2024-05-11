@@ -29,4 +29,8 @@ builder.Services.AddDbContextFactory<DatabaseContext>(options =>
 
 var app = builder.Build();
 
+var factory = app.Services.GetRequiredService<IDbContextFactory<DatabaseContext>>();
+await using var context = factory.CreateDbContext();
+await context.Database.MigrateAsync(app.Lifetime.ApplicationStopping);
+
 app.Run();
