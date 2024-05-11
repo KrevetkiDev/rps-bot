@@ -175,7 +175,8 @@ public class TelegramService : ITelegramService, IHostedService
         var playerChoice = RpsItemParser.ParseToRps(message.Text);
         if (playerChoice.HasValue)
         {
-            var result = _gameService.Game(playerChoice.Value);
+            var botChoice = _gameService.GenerateBotChoice();
+            var result = _gameService.Game(playerChoice.Value, botChoice);
 
             await _client.SendTextMessageAsync(message.Chat.Id,
                 $"{RpsItemsExtensions.ToEmoji(result.BotChoice)}",
