@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRps.Bot", "src\BotRps.Bo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F71DD0FD-1D1C-4A08-90D6-C6234BE5D824}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bot-rpsTests", "bot-rpsTests\bot-rpsTests.csproj", "{E290A2E3-431C-4FF8-B4C1-5C8F081E4D52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotRpsTests", "BotRpsTests\BotRpsTests.csproj", "{E290A2E3-431C-4FF8-B4C1-5C8F081E4D52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,8 +7,9 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <AssemblyName>bot-rpsTests</AssemblyName>
-        <RootNamespace>bot-rpsTests</RootNamespace>
+        <RootNamespace>BotRps.Infrastructure.Tests</RootNamespace>
+        <PackageId>BotRpsTests</PackageId>
+        <AssemblyName>BotRps.Infrastructure.Tests</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
