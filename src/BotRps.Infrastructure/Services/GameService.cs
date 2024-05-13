@@ -10,7 +10,11 @@ public class GameService : IGameService
 
     public GameResult Game(RpsItems playerChoice, RpsItems botChoice)
     {
-        var result = new GameResult();
+        var result = new GameResult
+        {
+            PlayerChoice = playerChoice,
+            BotChoice = botChoice
+        };
         switch (playerChoice == RpsItems.Rock)
         {
             case true when botChoice == RpsItems.Scissors:
