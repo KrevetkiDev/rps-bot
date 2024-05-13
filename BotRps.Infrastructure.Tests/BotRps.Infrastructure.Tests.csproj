@@ -8,7 +8,7 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <RootNamespace>BotRps.Infrastructure.Tests</RootNamespace>
-        <PackageId>BotRpsTests</PackageId>
+        <PackageId>BotRps.Infrastructure.Tests</PackageId>
         <AssemblyName>BotRps.Infrastructure.Tests</AssemblyName>
     </PropertyGroup>
 
