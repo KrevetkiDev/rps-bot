@@ -7,4 +7,6 @@ public class GameResult
     public GameResultTypes Type { get; set; }
 
     public RpsItems BotChoice { get; set; }
+
+    public RpsItems PlayerChoice { get; set; }
 }

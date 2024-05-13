@@ -5,5 +5,6 @@ namespace BotRps.Application.Interfaces;
 
 public interface IGameService
 {
-    GameResult Game(RpsItems playerChoice);
+    GameResult Game(RpsItems playerChoice, RpsItems botChoice);
+    RpsItems GenerateBotChoice();
 }

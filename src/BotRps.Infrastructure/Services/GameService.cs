@@ -1,25 +1,26 @@
 ﻿using BotRpc.Domain.Enums;
-using BotRps.Application;
 using BotRps.Application.Interfaces;
 using BotRps.Application.Models;
 
 namespace BotRps.Infrastructure.Services;
 
-
 public class GameService : IGameService
 {
     private readonly Random _random = new();
-    public GameResult Game(RpsItems playerChoice)
+
+    public GameResult Game(RpsItems playerChoice, RpsItems botChoice)
     {
-        var botChoice = (RpsItems)_random.Next(3);
-        var result = new GameResult();
-        result.BotChoice = botChoice;
+        var result = new GameResult
+        {
+            PlayerChoice = playerChoice,
+            BotChoice = botChoice
+        };
         switch (playerChoice == RpsItems.Rock)
         {
             case true when botChoice == RpsItems.Scissors:
-                result.Type= GameResultTypes.PlayerWin;
+                result.Type = GameResultTypes.PlayerWin;
                 break;
-            
+
             case true when botChoice == RpsItems.Paper:
                 result.Type = GameResultTypes.BotWin;
                 break;
@@ -30,7 +31,7 @@ public class GameService : IGameService
             case true when botChoice == RpsItems.Rock:
                 result.Type = GameResultTypes.BotWin;
                 break;
-            
+
             case true when botChoice == RpsItems.Paper:
                 result.Type = GameResultTypes.PlayerWin;
                 break;
@@ -41,7 +42,7 @@ public class GameService : IGameService
             case true when botChoice == RpsItems.Rock:
                 result.Type = GameResultTypes.PlayerWin;
                 break;
-            
+
             case true when botChoice == RpsItems.Scissors:
                 result.Type = GameResultTypes.BotWin;
                 break;
@@ -53,5 +54,11 @@ public class GameService : IGameService
         }
 
         return result;
+    }
+
+    public RpsItems GenerateBotChoice()
+    {
+        var botChoice = (RpsItems)_random.Next(3);
+        return botChoice;
     }
 }

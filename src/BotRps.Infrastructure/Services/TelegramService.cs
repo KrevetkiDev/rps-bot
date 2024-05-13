@@ -27,31 +27,29 @@ public class TelegramService : ITelegramService, IHostedService
     private const string BetUpCommand = "/bet_up";
     private const string BetDownCommand = "/bet_down";
 
-    private readonly ReplyKeyboardMarkup _keyboard = new(new[]
+    private readonly ReplyKeyboardMarkup _keyboard = new(new KeyboardButton[][]
     {
-        new KeyboardButton[] { RpsItems.Rock.ToEmoji() },
-        new KeyboardButton[] { RpsItems.Scissors.ToEmoji() },
-        new KeyboardButton[] { RpsItems.Paper.ToEmoji() },
-        new KeyboardButton[] { Balance },
-        new KeyboardButton[] { Rating }
+        [RpsItems.Rock.ToEmoji(), RpsItems.Scissors.ToEmoji(), RpsItems.Paper.ToEmoji()],
+        [Balance, Rating]
     })
     {
         ResizeKeyboard = true
     };
 
-    private readonly List<BotCommand> _commands = new List<BotCommand>()
-    {
+    private readonly List<BotCommand> _commands =
+    [
         new()
         {
             Command = BetUpCommand,
             Description = "Повысить ставку на 10"
         },
+
         new()
         {
             Command = BetDownCommand,
             Description = "Понизить ставку на 10"
         }
-    };
+    ];
 
     public TelegramService(IOptions<TelegramOptions> options, IGameService gameService,
         IDbContextFactory<DatabaseContext> dbContextFactory, IOptions<ResetBalanceOptions> resetBalanceOptions)
@@ -94,30 +92,21 @@ public class TelegramService : ITelegramService, IHostedService
                 }
 
                 if (message.Text == Balance)
-                {
                     await OnBalance(message, cancellationToken);
-                }
 
                 if (message.Text == BetUpCommand)
-                {
                     await OnBetUp(message, cancellationToken);
-                }
 
                 if (message.Text == BetDownCommand)
-                {
                     await OnBetDown(message, cancellationToken);
-                }
 
                 if (message.Text == Rating)
-                {
                     await OnShowRating(message, cancellationToken);
-                }
             }
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            throw;
         }
     }
 
@@ -129,12 +118,16 @@ public class TelegramService : ITelegramService, IHostedService
 
     private async Task OnStart(Message message, CancellationToken cancellationToken)
     {
+        if (message.From == null)
+            return;
+
         var telegramId = message.From.Id;
 
-        using var dbContext = _dbContextFactory.CreateDbContext();
-        if (!dbContext.Users.Any(x => x.TelegramId == telegramId))
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
+        if (user == null)
         {
-            var user = new User()
+            user = new User
             {
                 Balance = 100,
                 TelegramId = telegramId,
@@ -142,21 +135,28 @@ public class TelegramService : ITelegramService, IHostedService
                 Nickname = message.From.Username
             };
             dbContext.Users.Add(user);
-            dbContext.SaveChanges();
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
-                replyMarkup: _keyboard,
-                cancellationToken: cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
+
+        await _client.SendTextMessageAsync(message.Chat.Id,
+            $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+            replyMarkup: _keyboard,
+            cancellationToken: cancellationToken);
     }
 
     private async Task OnRpsItem(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From.Id;
+        var telegramId = message.From!.Id;
 
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
+        if (user == null)
+        {
+            await _client.SendTextMessageAsync(message.Chat.Id, "Ты не найден в бд. Попробуй выполнить команду /start.",
+                cancellationToken: cancellationToken);
+            return;
+        }
+
         if (user.Balance == 0)
         {
             await _client.SendTextMessageAsync(message.Chat.Id,
@@ -172,24 +172,17 @@ public class TelegramService : ITelegramService, IHostedService
             return;
         }
 
-        var playerChoice = RpsItemParser.ParseToRps(message.Text);
+        var playerChoice = RpsItemParser.ParseToRps(message.Text!);
         if (playerChoice.HasValue)
         {
-            var result = _gameService.Game(playerChoice.Value);
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"{RpsItemsExtensions.ToEmoji(result.BotChoice)}",
-                cancellationToken: cancellationToken);
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"{GameResultTypesExtensions.ToRuString(result.Type)}",
-                cancellationToken: cancellationToken);
+            var botChoice = _gameService.GenerateBotChoice();
+            var result = _gameService.Game(playerChoice.Value, botChoice);
 
             if (result.Type == GameResultTypes.PlayerWin)
             {
                 user.Balance += user.Bet;
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
 
             if (result.Type == GameResultTypes.BotWin)
@@ -205,7 +198,7 @@ public class TelegramService : ITelegramService, IHostedService
                         cancellationToken: cancellationToken);
                 }
 
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync(cancellationToken);
 
                 if (user.Balance == 0)
                 {
@@ -214,27 +207,33 @@ public class TelegramService : ITelegramService, IHostedService
                         cancellationToken: cancellationToken);
                 }
             }
+
+            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.BotChoice.ToEmoji()}",
+                cancellationToken: cancellationToken);
+
+            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.Type.ToRuString()}",
+                cancellationToken: cancellationToken);
         }
     }
 
     private async Task OnBalance(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From.Id;
+        var telegramId = message.From!.Id;
 
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var user = dbContext.Users.AsNoTracking().FirstOrDefault(x => x.TelegramId == telegramId);
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user.Balance}. Твоя ставка {user.Bet}",
+        await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user!.Balance}. Твоя ставка {user.Bet}",
             cancellationToken: cancellationToken);
     }
 
     private async Task OnBetUp(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From.Id;
+        var telegramId = message.From!.Id;
 
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
 
-        if (user.Bet == user.Balance)
+        if (user!.Bet == user.Balance)
         {
             await _client.SendTextMessageAsync(message.Chat.Id, $"Ты не можешь поставить больше чем у тебя есть!",
                 cancellationToken: cancellationToken);
@@ -242,19 +241,19 @@ public class TelegramService : ITelegramService, IHostedService
         }
 
         user.Bet += 10;
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync(cancellationToken);
         await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
             cancellationToken: cancellationToken);
     }
 
     private async Task OnBetDown(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From.Id;
+        var telegramId = message.From!.Id;
 
-        using var dbContext = _dbContextFactory.CreateDbContext();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
 
-        if (user.Bet <= 10)
+        if (user!.Bet <= 10)
         {
             await _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть меньше или равна нулю! ",
                 cancellationToken: cancellationToken);
@@ -262,7 +261,7 @@ public class TelegramService : ITelegramService, IHostedService
         }
 
         user.Bet -= 10;
-        dbContext.SaveChanges();
+        await dbContext.SaveChangesAsync(cancellationToken);
         await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
             cancellationToken: cancellationToken);
     }
@@ -271,11 +270,12 @@ public class TelegramService : ITelegramService, IHostedService
     {
         var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var topUsers = dbContext.Users.AsNoTracking().OrderByDescending(x => x.Balance).Take(10).ToList();
-        string usersTopList = null;
+        var usersTopList = string.Empty;
         for (int i = 0; i < topUsers.Count; i++)
         {
             var user = topUsers[i];
-            var userString = $"{i + 1}. @{user.Nickname} - {user.Balance}\n";
+            var username = user.Nickname == null ? "anon" : $"@{user.Nickname}";
+            var userString = $"{i + 1}. {username} - {user.Balance}\n";
             usersTopList += userString;
         }
 
