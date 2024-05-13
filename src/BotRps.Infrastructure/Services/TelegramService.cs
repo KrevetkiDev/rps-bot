@@ -132,9 +132,10 @@ public class TelegramService : ITelegramService, IHostedService
         var telegramId = message.From.Id;
 
         using var dbContext = _dbContextFactory.CreateDbContext();
-        if (!dbContext.Users.Any(x => x.TelegramId == telegramId))
+        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
+        if (user == null)
         {
-            var user = new User()
+            user = new User
             {
                 Balance = 100,
                 TelegramId = telegramId,
@@ -142,13 +143,13 @@ public class TelegramService : ITelegramService, IHostedService
                 Nickname = message.From.Username
             };
             dbContext.Users.Add(user);
-            dbContext.SaveChanges();
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
-                replyMarkup: _keyboard,
-                cancellationToken: cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
+
+        await _client.SendTextMessageAsync(message.Chat.Id,
+            $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+            replyMarkup: _keyboard,
+            cancellationToken: cancellationToken);
     }
 
     private async Task OnRpsItem(Message message, CancellationToken cancellationToken)
@@ -177,14 +178,6 @@ public class TelegramService : ITelegramService, IHostedService
         {
             var botChoice = _gameService.GenerateBotChoice();
             var result = _gameService.Game(playerChoice.Value, botChoice);
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"{RpsItemsExtensions.ToEmoji(result.BotChoice)}",
-                cancellationToken: cancellationToken);
-
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"{GameResultTypesExtensions.ToRuString(result.Type)}",
-                cancellationToken: cancellationToken);
 
             if (result.Type == GameResultTypes.PlayerWin)
             {
@@ -215,6 +208,12 @@ public class TelegramService : ITelegramService, IHostedService
                         cancellationToken: cancellationToken);
                 }
             }
+
+            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.BotChoice.ToEmoji()}",
+                cancellationToken: cancellationToken);
+
+            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.Type.ToRuString()}",
+                cancellationToken: cancellationToken);
         }
     }
 
@@ -276,7 +275,8 @@ public class TelegramService : ITelegramService, IHostedService
         for (int i = 0; i < topUsers.Count; i++)
         {
             var user = topUsers[i];
-            var userString = $"{i + 1}. @{user.Nickname} - {user.Balance}\n";
+            var username = user.Nickname == null ? "anon" : $"@{user.Nickname}";
+            var userString = $"{i + 1}. {username} - {user.Balance}\n";
             usersTopList += userString;
         }
 
