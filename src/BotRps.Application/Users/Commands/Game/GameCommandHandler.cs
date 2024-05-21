@@ -54,7 +54,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
 
         var messageBotChoice = new Message()
         {
-            Text = $"{result.BotChoice.ToEmoji()}"
+            Text = result.BotChoice.ToEmoji()
         };
 
         messages.Add(messageBotChoice);
@@ -64,7 +64,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             user.Balance += user.Bet;
             var messageResult = new Message()
             {
-                Text = $"{result.Type.ToRuString()}"
+                Text = result.Type.ToRuString()
             };
             messages.Add(messageResult);
 
