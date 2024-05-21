@@ -11,7 +11,7 @@ public static class GameResultTypesExtensions
             GameResultTypes.PlayerWin => "Ты победил",
             GameResultTypes.BotWin => "Бот победил",
             GameResultTypes.Draw => "Ничья",
-            _=> "unknown"
+            _ => "unknown"
         };
     }
 }
