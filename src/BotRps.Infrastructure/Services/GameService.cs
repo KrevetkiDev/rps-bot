@@ -1,5 +1,5 @@
 ﻿using BotRpc.Domain.Enums;
-using BotRps.Application.Interfaces;
+using BotRps.Application.Common.Interfaces;
 using BotRps.Application.Models;
 
 namespace BotRps.Infrastructure.Services;

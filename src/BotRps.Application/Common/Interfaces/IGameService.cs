@@ -1,7 +1,7 @@
 ﻿using BotRpc.Domain.Enums;
 using BotRps.Application.Models;
 
-namespace BotRps.Application.Interfaces;
+namespace BotRps.Application.Common.Interfaces;
 
 public interface IGameService
 {

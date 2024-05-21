@@ -2,35 +2,33 @@
 using BotRps.Application;
 using BotRps.Application.Extensions;
 using BotRps.Application.Interfaces;
+using BotRps.Application.Users.Commands.BetDown;
+using BotRps.Application.Users.Commands.BetUp;
+using BotRps.Application.Users.Commands.RpsItem;
+using BotRps.Application.Users.Commands.Start;
+using BotRps.Application.Users.Queries.GetBalance;
+using BotRps.Application.Users.Queries.GetRating;
 using BotRps.Infrastructure.Options;
-using BotRps.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
-using User = BotRpc.Domain.Entities.User;
 
 namespace BotRps.Infrastructure.Services;
 
 public class TelegramService : ITelegramService, IHostedService
 {
     private readonly ITelegramBotClient _client;
-    private readonly IGameService _gameService;
-    private readonly IDbContextFactory<DatabaseContext> _dbContextFactory;
-    private readonly ResetBalanceOptions _resetBalanceOptions;
-
-    private const string Balance = "\ud83d\udcb2";
-    private const string Rating = "\ud83c\udfc6";
-
-    private const string BetUpCommand = "/bet_up";
-    private const string BetDownCommand = "/bet_down";
+    private readonly IMediator _mediator;
+    private readonly ILogger<ITelegramService> _logger;
 
     private readonly ReplyKeyboardMarkup _keyboard = new(new KeyboardButton[][]
     {
         [RpsItems.Rock.ToEmoji(), RpsItems.Scissors.ToEmoji(), RpsItems.Paper.ToEmoji()],
-        [Balance, Rating]
+        [Commands.Balance, Commands.Rating]
     })
     {
         ResizeKeyboard = true
@@ -40,24 +38,22 @@ public class TelegramService : ITelegramService, IHostedService
     [
         new()
         {
-            Command = BetUpCommand,
+            Command = Commands.BetUpCommand,
             Description = "Повысить ставку на 10"
         },
 
         new()
         {
-            Command = BetDownCommand,
+            Command = Commands.BetDownCommand,
             Description = "Понизить ставку на 10"
         }
     ];
 
-    public TelegramService(IOptions<TelegramOptions> options, IGameService gameService,
-        IDbContextFactory<DatabaseContext> dbContextFactory, IOptions<ResetBalanceOptions> resetBalanceOptions)
+    public TelegramService(IOptions<TelegramOptions> options, IMediator mediator, ILogger<ITelegramService> logger)
     {
         _client = new TelegramBotClient(options.Value.Token);
-        _gameService = gameService;
-        _dbContextFactory = dbContextFactory;
-        _resetBalanceOptions = resetBalanceOptions.Value;
+        _mediator = mediator;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -91,22 +87,22 @@ public class TelegramService : ITelegramService, IHostedService
                     await OnRpsItem(message, cancellationToken);
                 }
 
-                if (message.Text == Balance)
+                if (message.Text == Commands.Balance)
                     await OnBalance(message, cancellationToken);
 
-                if (message.Text == BetUpCommand)
+                if (message.Text == Commands.BetUpCommand)
                     await OnBetUp(message, cancellationToken);
 
-                if (message.Text == BetDownCommand)
+                if (message.Text == Commands.BetDownCommand)
                     await OnBetDown(message, cancellationToken);
 
-                if (message.Text == Rating)
+                if (message.Text == Commands.Rating)
                     await OnShowRating(message, cancellationToken);
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError(e, "Error handling message");
         }
     }
 
@@ -121,164 +117,56 @@ public class TelegramService : ITelegramService, IHostedService
         if (message.From == null)
             return;
 
-        var telegramId = message.From.Id;
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
-        if (user == null)
-        {
-            user = new User
-            {
-                Balance = 100,
-                TelegramId = telegramId,
-                Bet = 10,
-                Nickname = message.From.Username
-            };
-            dbContext.Users.Add(user);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+        var response = await _mediator.Send(new StartCommand(), cancellationToken: cancellationToken);
 
         await _client.SendTextMessageAsync(message.Chat.Id,
-            $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Balance}?",
+            $"{message.Text}",
             replyMarkup: _keyboard,
             cancellationToken: cancellationToken);
     }
 
     private async Task OnRpsItem(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From!.Id;
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
-        if (user == null)
-        {
-            await _client.SendTextMessageAsync(message.Chat.Id, "Ты не найден в бд. Попробуй выполнить команду /start.",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
-        if (user.Balance == 0)
-        {
-            await _client.SendTextMessageAsync(message.Chat.Id,
-                $"Тебе не на что играть. Баланс обновится в {_resetBalanceOptions.ResetTime}",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
-        if (user.Bet == 0)
-        {
-            await _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть равна нулю.",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
         var playerChoice = RpsItemParser.ParseToRps(message.Text!);
+
         if (playerChoice.HasValue)
         {
-            var botChoice = _gameService.GenerateBotChoice();
-            var result = _gameService.Game(playerChoice.Value, botChoice);
-
-            if (result.Type == GameResultTypes.PlayerWin)
+            var response =
+                await _mediator.Send(
+                    new GameCommand() { TelegramId = message.From!.Id, PlayerChoice = playerChoice.Value },
+                    cancellationToken: cancellationToken);
+            foreach (var mess in response)
             {
-                user.Balance += user.Bet;
-
-                await dbContext.SaveChangesAsync(cancellationToken);
+                await _client.SendTextMessageAsync(message.Chat.Id, mess.Text, cancellationToken: cancellationToken);
             }
-
-            if (result.Type == GameResultTypes.BotWin)
-            {
-                user.Balance -= user.Bet;
-
-                if (user.Bet > user.Balance && user.Balance > 0)
-                {
-                    user.Bet = user.Balance;
-
-                    await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: {user.Bet}",
-                        cancellationToken: cancellationToken);
-                }
-
-                await dbContext.SaveChangesAsync(cancellationToken);
-
-                if (user.Balance == 0)
-                {
-                    await _client.SendTextMessageAsync(message.Chat.Id,
-                        $"Твой баланс равен нулю, ты проиграл все деньги. Баланс обновится в {_resetBalanceOptions.ResetTime}",
-                        cancellationToken: cancellationToken);
-                }
-            }
-
-            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.BotChoice.ToEmoji()}",
-                cancellationToken: cancellationToken);
-
-            await _client.SendTextMessageAsync(message.Chat.Id, $"{result.Type.ToRuString()}",
-                cancellationToken: cancellationToken);
         }
     }
 
     private async Task OnBalance(Message message, CancellationToken cancellationToken)
     {
         var telegramId = message.From!.Id;
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var user = dbContext.Users.AsNoTracking().FirstOrDefault(x => x.TelegramId == telegramId);
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Твой баланс: {user!.Balance}. Твоя ставка {user.Bet}",
-            cancellationToken: cancellationToken);
+        var response = await _mediator.Send(new GetBalanceQuery() { TelegramId = telegramId }, cancellationToken);
+        await _client.SendTextMessageAsync(message.Chat.Id, response.Text, cancellationToken: cancellationToken);
     }
 
     private async Task OnBetUp(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From!.Id;
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
-
-        if (user!.Bet == user.Balance)
-        {
-            await _client.SendTextMessageAsync(message.Chat.Id, $"Ты не можешь поставить больше чем у тебя есть!",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
-        user.Bet += 10;
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
+        var response = await _mediator.Send(new BetUpCommand(), cancellationToken);
+        await _client.SendTextMessageAsync(message.Chat.Id, response.Text,
             cancellationToken: cancellationToken);
     }
 
     private async Task OnBetDown(Message message, CancellationToken cancellationToken)
     {
-        var telegramId = message.From!.Id;
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var user = dbContext.Users.FirstOrDefault(x => x.TelegramId == telegramId);
-
-        if (user!.Bet <= 10)
-        {
-            await _client.SendTextMessageAsync(message.Chat.Id, $"Ставка не может быть меньше или равна нулю! ",
-                cancellationToken: cancellationToken);
-            return;
-        }
-
-        user.Bet -= 10;
-        await dbContext.SaveChangesAsync(cancellationToken);
-        await _client.SendTextMessageAsync(message.Chat.Id, $"Текущая ставка: {user.Bet}\nДелай ход!",
+        var response = await _mediator.Send(new BetDownCommand(), cancellationToken);
+        await _client.SendTextMessageAsync(message.Chat.Id, response.Text,
             cancellationToken: cancellationToken);
     }
 
     private async Task OnShowRating(Message message, CancellationToken cancellationToken)
     {
-        var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var topUsers = dbContext.Users.AsNoTracking().OrderByDescending(x => x.Balance).Take(10).ToList();
-        var usersTopList = string.Empty;
-        for (int i = 0; i < topUsers.Count; i++)
-        {
-            var user = topUsers[i];
-            var username = user.Nickname == null ? "anon" : $"@{user.Nickname}";
-            var userString = $"{i + 1}. {username} - {user.Balance}\n";
-            usersTopList += userString;
-        }
+        var response = await _mediator.Send(new GetRatingQuery(), cancellationToken);
 
-        await _client.SendTextMessageAsync(message.Chat.Id, usersTopList, cancellationToken: cancellationToken);
+        await _client.SendTextMessageAsync(message.Chat.Id, response.Text, cancellationToken: cancellationToken);
     }
 }
