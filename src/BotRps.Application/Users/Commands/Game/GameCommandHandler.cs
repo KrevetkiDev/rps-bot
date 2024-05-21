@@ -76,7 +76,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             user.Balance -= user.Bet;
             var messageResult = new Message()
             {
-                Text = $"{result.Type.ToRuString()}"
+                Text = result.Type.ToRuString()
             };
             messages.Add(messageResult);
             await transaction.CommitAsync(cancellationToken);
@@ -86,7 +86,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
         {
             var messageResult = new Message()
             {
-                Text = $"{result.Type.ToRuString()}"
+                Text = result.Type.ToRuString()
             };
             messages.Add(messageResult);
         }
