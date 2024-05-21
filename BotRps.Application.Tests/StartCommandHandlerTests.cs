@@ -44,17 +44,22 @@ public class StartCommandHandlerTests
     {
         // Arrange
         var telegramId = 1;
-        var userMock = new List<User> { new() }.AsEfQueryable();
+        var userMock = new List<User>().AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
 
         // Act
-        var result = await _startCommandHandler.Handle(new StartCommand() { TelegramId = telegramId }, default);
+        var result =
+            await _startCommandHandler.Handle(new StartCommand() { TelegramId = telegramId, Username = "test" },
+                default);
 
         // Assert
-        transactionMock.Received(1).Add(Arg.Is<User>(x =>
-            x.Balance == 100 && x.Bet == 10 && x.TelegramId == telegramId && x.Nickname == null));
+        transactionMock.Received(1).Add(Arg.Is<User>(
+            x => x.Balance == 100
+                 && x.Bet == 10
+                 && x.TelegramId == telegramId
+                 && x.Nickname == "test"));
         result.Text.Should()
             .Be(
                 $"Текущая ставка: 10. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Commands.Balance}?");
