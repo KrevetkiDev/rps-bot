@@ -33,7 +33,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             [
                 new Message()
                 {
-                    Text = $"Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
+                    Text = "Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
                 }
             ];
         }
@@ -74,11 +74,11 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
         if (result.Type == GameResultTypes.BotWin)
         {
             user.Balance -= user.Bet;
-            var messageResultBotWin = new Message()
+            var messageResult = new Message()
             {
                 Text = $"{result.Type.ToRuString()}"
             };
-
+            messages.Add(messageResult);
             await transaction.CommitAsync(cancellationToken);
         }
 
@@ -112,7 +112,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             [
                 new Message()
                 {
-                    Text = $"Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
+                    Text = "Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
                 }
             ];
         }
