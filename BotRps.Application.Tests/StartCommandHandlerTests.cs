@@ -1,7 +1,8 @@
 ﻿using BotRpc.Domain.Entities;
 using BotRpc.Domain.Enums;
+using BotRps.Application.Common;
+using BotRps.Application.Common.Extensions;
 using BotRps.Application.Common.Interfaces;
-using BotRps.Application.Extensions;
 using BotRps.Application.Users.Commands.Start;
 using BotRps.Tests;
 using FluentAssertions;

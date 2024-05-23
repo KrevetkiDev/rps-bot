@@ -1,10 +1,9 @@
 ﻿using BotRpc.Domain.Entities;
 using BotRpc.Domain.Enums;
+using BotRps.Application.Common.Extensions;
 using BotRps.Application.Common.Interfaces;
-using BotRps.Application.Extensions;
-using BotRps.Application.Models;
+using BotRps.Application.Common.Models;
 using BotRps.Application.Users.Commands.Game;
-using BotRps.Application.Users.Commands.RpsItem;
 using BotRps.Tests;
 using FluentAssertions;
 using NSubstitute;

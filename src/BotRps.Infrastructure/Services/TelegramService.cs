@@ -1,10 +1,10 @@
 ﻿using BotRpc.Domain.Enums;
-using BotRps.Application;
-using BotRps.Application.Extensions;
-using BotRps.Application.Interfaces;
+using BotRps.Application.Common;
+using BotRps.Application.Common.Extensions;
+using BotRps.Application.Common.Interfaces;
 using BotRps.Application.Users.Commands.BetDown;
 using BotRps.Application.Users.Commands.BetUp;
-using BotRps.Application.Users.Commands.RpsItem;
+using BotRps.Application.Users.Commands.Game;
 using BotRps.Application.Users.Commands.Start;
 using BotRps.Application.Users.Queries.GetBalance;
 using BotRps.Application.Users.Queries.GetRating;

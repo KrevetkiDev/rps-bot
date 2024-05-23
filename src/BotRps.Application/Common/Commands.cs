@@ -1,4 +1,4 @@
-﻿namespace BotRps.Application;
+﻿namespace BotRps.Application.Common;
 
 public static class Commands
 {

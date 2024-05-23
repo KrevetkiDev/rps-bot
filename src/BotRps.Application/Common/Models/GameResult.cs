@@ -1,6 +1,6 @@
 ﻿using BotRpc.Domain.Enums;
 
-namespace BotRps.Application.Models;
+namespace BotRps.Application.Common.Models;
 
 public class GameResult
 {

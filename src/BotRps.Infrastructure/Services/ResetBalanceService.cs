@@ -1,5 +1,5 @@
 ﻿using System.Timers;
-using BotRps.Application.Interfaces;
+using BotRps.Application.Common.Interfaces;
 using BotRps.Infrastructure.Options;
 using BotRps.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

@@ -1,8 +1,8 @@
 ﻿using BotRpc.Domain.Entities;
 using BotRpc.Domain.Enums;
+using BotRps.Application.Common.Extensions;
 using BotRps.Application.Common.Interfaces;
-using BotRps.Application.Extensions;
-using BotRps.Application.Models;
+using BotRps.Application.Common.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +31,7 @@ public record StartCommandHandler(IRepository Repository) : IRequestHandler<Star
         return new Message
         {
             Text =
-                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Application.Commands.Balance}?"
+                $"Текущая ставка: {user.Bet}. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Common.Commands.Balance}?"
         };
     }
 }

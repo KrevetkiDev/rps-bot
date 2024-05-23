@@ -1,6 +1,6 @@
 ﻿using BotRpc.Domain.Enums;
 
-namespace BotRps.Application;
+namespace BotRps.Application.Common;
 
 public class RpsItemParser
 {
