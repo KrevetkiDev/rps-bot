@@ -22,6 +22,7 @@ public class BetDownHandlerTests
     {
         // Arrange
         var telegramId = 1;
+
         var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 9 } }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
@@ -39,6 +40,7 @@ public class BetDownHandlerTests
     {
         // Arrange
         var telegramId = 1;
+
         var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 20 } }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);

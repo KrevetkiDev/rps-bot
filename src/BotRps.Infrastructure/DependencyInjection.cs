@@ -1,5 +1,4 @@
 ﻿using BotRps.Application.Common.Interfaces;
-using BotRps.Application.Interfaces;
 using BotRps.Infrastructure.Options;
 using BotRps.Infrastructure.Persistence;
 using BotRps.Infrastructure.Persistence.Repository;

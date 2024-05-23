@@ -1,4 +1,4 @@
-﻿namespace BotRps.Application.Models;
+﻿namespace BotRps.Application.Common.Models;
 
 public class Message
 {

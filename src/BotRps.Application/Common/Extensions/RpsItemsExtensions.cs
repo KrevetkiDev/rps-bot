@@ -1,6 +1,6 @@
 ﻿using BotRpc.Domain.Enums;
 
-namespace BotRps.Application.Extensions;
+namespace BotRps.Application.Common.Extensions;
 
 public static class RpsItemsExtensions
 {

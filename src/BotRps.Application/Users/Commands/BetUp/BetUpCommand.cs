@@ -1,4 +1,4 @@
-﻿using BotRps.Application.Models;
+﻿using BotRps.Application.Common.Models;
 using MediatR;
 
 namespace BotRps.Application.Users.Commands.BetUp;

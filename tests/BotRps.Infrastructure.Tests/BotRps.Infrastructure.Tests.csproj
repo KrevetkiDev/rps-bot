@@ -7,13 +7,15 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <RootNamespace>BotRps.Infrastructure.Tests</RootNamespace>
+        <PackageId>BotRps.Infrastructure.Tests</PackageId>
+        <AssemblyName>BotRps.Infrastructure.Tests</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
         <PackageReference Include="FluentAssertions" Version="6.12.0"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
-        <PackageReference Include="MockQueryable.NSubstitute" Version="7.0.1"/>
         <PackageReference Include="xunit" Version="2.5.3"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
     </ItemGroup>
@@ -23,9 +25,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\BotRps.Tests\BotRps.Tests.csproj"/>
-        <ProjectReference Include="..\src\BotRps.Application\BotRps.Application.csproj"/>
+        <ProjectReference Include="..\..\src\BotRps.Domain\BotRps.Domain.csproj"/>
+        <ProjectReference Include="..\..\src\BotRps.Infrastructure\BotRps.Infrastructure.csproj"/>
         <ProjectReference Include="..\src\BotRps.Domain\BotRps.Domain.csproj"/>
+        <ProjectReference Include="..\src\BotRps.Infrastructure\BotRps.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

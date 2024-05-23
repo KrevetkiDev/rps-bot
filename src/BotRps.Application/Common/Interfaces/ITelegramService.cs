@@ -1,4 +1,4 @@
-﻿namespace BotRps.Application.Interfaces;
+﻿namespace BotRps.Application.Common.Interfaces;
 
 public interface ITelegramService
 {

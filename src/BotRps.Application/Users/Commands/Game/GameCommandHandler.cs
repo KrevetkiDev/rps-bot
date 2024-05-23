@@ -1,9 +1,8 @@
 ﻿using BotRpc.Domain.Entities;
 using BotRpc.Domain.Enums;
+using BotRps.Application.Common.Extensions;
 using BotRps.Application.Common.Interfaces;
-using BotRps.Application.Extensions;
-using BotRps.Application.Models;
-using BotRps.Application.Users.Commands.RpsItem;
+using BotRps.Application.Common.Models;
 using MediatR;
 
 namespace BotRps.Application.Users.Commands.Game;
@@ -34,17 +33,6 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
                 new Message()
                 {
                     Text = "Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
-                }
-            ];
-        }
-
-        if (user.Bet == 0)
-        {
-            return
-            [
-                new Message()
-                {
-                    Text = "Ставка не может быть равна нулю"
                 }
             ];
         }
@@ -116,7 +104,6 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
                 }
             ];
         }
-
 
         return messages;
     }

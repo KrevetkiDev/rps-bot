@@ -1,10 +1,10 @@
 ﻿using BotRpc.Domain.Enums;
-using BotRps.Application;
-using BotRps.Application.Extensions;
-using BotRps.Application.Interfaces;
+using BotRps.Application.Common;
+using BotRps.Application.Common.Extensions;
+using BotRps.Application.Common.Interfaces;
 using BotRps.Application.Users.Commands.BetDown;
 using BotRps.Application.Users.Commands.BetUp;
-using BotRps.Application.Users.Commands.RpsItem;
+using BotRps.Application.Users.Commands.Game;
 using BotRps.Application.Users.Commands.Start;
 using BotRps.Application.Users.Queries.GetBalance;
 using BotRps.Application.Users.Queries.GetRating;
@@ -145,20 +145,20 @@ public class TelegramService : ITelegramService, IHostedService
     private async Task OnBalance(Message message, CancellationToken cancellationToken)
     {
         var telegramId = message.From!.Id;
-        var response = await _mediator.Send(new GetBalanceQuery() { TelegramId = telegramId }, cancellationToken);
+        var response = await _mediator.Send(new GetBalanceQuery() { TelegramId = message.From!.Id }, cancellationToken);
         await _client.SendTextMessageAsync(message.Chat.Id, response.Text, cancellationToken: cancellationToken);
     }
 
     private async Task OnBetUp(Message message, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new BetUpCommand(), cancellationToken);
+        var response = await _mediator.Send(new BetUpCommand() { TelegramId = message.From!.Id }, cancellationToken);
         await _client.SendTextMessageAsync(message.Chat.Id, response.Text,
             cancellationToken: cancellationToken);
     }
 
     private async Task OnBetDown(Message message, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new BetDownCommand(), cancellationToken);
+        var response = await _mediator.Send(new BetDownCommand() { TelegramId = message.From!.Id }, cancellationToken);
         await _client.SendTextMessageAsync(message.Chat.Id, response.Text,
             cancellationToken: cancellationToken);
     }
