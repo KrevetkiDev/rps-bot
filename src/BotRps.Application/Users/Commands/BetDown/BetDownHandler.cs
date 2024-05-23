@@ -14,12 +14,12 @@ public record BetDownHandler(IRepository Repository) : IRequestHandler<BetDownCo
 
         if (user!.Bet <= 10)
         {
-            return new Message { Text = "Ставка не может быть меньше или равна нулю!" };
+            return new Message { Text = Messages.BetCannotBeLessThanZero };
         }
 
         user.Bet -= 10;
         await transaction.CommitAsync(cancellationToken);
 
-        return new Message { Text = $"Текущая ставка: {user.Bet}\nДелай ход!" };
+        return new Message { Text = Messages.CurrentBet(user.Bet) };
     }
 }

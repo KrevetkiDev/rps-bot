@@ -13,6 +13,6 @@ public record GetBalanceHandler(IRepository Repository) : IRequestHandler<GetBal
         await using var transaction = await Repository.BeginTransactionAsync<User>(cancellationToken);
         var user = transaction.Set.AsNoTracking().FirstOrDefault(x => x.TelegramId == request.TelegramId);
 
-        return new Message { Text = $"Твой баланс: {user!.Balance}. Твоя ставка {user.Bet}." };
+        return new Message { Text = Messages.BalanceAndBet(user!.Balance, user.Bet) };
     }
 }

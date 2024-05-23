@@ -32,7 +32,7 @@ public class BetUpHandlerTests
         var result = await _betUpHandler.Handle(new BetUpCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Ты не можешь поставить больше чем у тебя есть!");
+        result.Text.Should().Be(Messages.BetCannotHigherBalance);
     }
 
     [Fact]
@@ -41,7 +41,8 @@ public class BetUpHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 10, Balance = 20 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -50,6 +51,7 @@ public class BetUpHandlerTests
         var result = await _betUpHandler.Handle(new BetUpCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Текущая ставка: 20\nДелай ход!");
+        user.Bet.Should().Be(30);
+        result.Text.Should().Be(Messages.CurrentBet(user.Bet));
     }
 }

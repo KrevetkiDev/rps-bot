@@ -14,12 +14,12 @@ public record BetUpHandler(IRepository Repository) : IRequestHandler<BetUpComman
 
         if (user!.Bet == user.Balance)
         {
-            return new Message { Text = "Ты не можешь поставить больше чем у тебя есть!" };
+            return new Message { Text = Messages.BetCannotHigherBalance };
         }
 
         user.Bet += 10;
         await transaction.CommitAsync(cancellationToken);
 
-        return new Message { Text = $"Текущая ставка: {user.Bet}\nДелай ход!" };
+        return new Message { Text = Messages.CurrentBet(user.Bet) };
     }
 }

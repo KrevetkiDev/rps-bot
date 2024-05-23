@@ -12,14 +12,7 @@ public record GetRatingHandler(IRepository Repository) : IRequestHandler<GetRati
     {
         await using var transaction = await Repository.BeginTransactionAsync<User>(cancellationToken);
         var topUsers = transaction.Set.AsNoTracking().OrderByDescending(x => x.Balance).Take(10).ToList();
-        var usersTopList = string.Empty;
-        for (int i = 0; i < topUsers.Count; i++)
-        {
-            var user = topUsers[i];
-            var username = user.Nickname == null ? "anon" : $"@{user.Nickname}";
-            var userString = $"{i + 1}. {username} - {user.Balance}\n";
-            usersTopList += userString;
-        }
+        var usersTopList = Messages.TopUsers(topUsers);
 
         return new Message()
         {
