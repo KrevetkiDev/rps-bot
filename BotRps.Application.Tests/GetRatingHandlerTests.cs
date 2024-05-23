@@ -23,6 +23,7 @@ public class GetRatingHandlerTests
         // Arrange
         var telegramId1 = 1;
         var telegramId2 = 2;
+
         var userMock = new List<User>
         {
             new() { TelegramId = telegramId1, Bet = 10, Balance = 10, Nickname = "test1" },

@@ -22,6 +22,7 @@ public class GetBalanceHandlerTests
     {
         // Arrange
         var telegramId = 1;
+
         var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 10, Balance = 10 } }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);

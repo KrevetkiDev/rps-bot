@@ -25,6 +25,7 @@ public class StartCommandHandlerTests
     {
         // Arrange
         var telegramId = 1;
+
         var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 10, Balance = 10, Nickname = "test" } }
             .AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
@@ -45,6 +46,7 @@ public class StartCommandHandlerTests
     {
         // Arrange
         var telegramId = 1;
+
         var userMock = new List<User>().AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
