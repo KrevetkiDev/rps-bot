@@ -21,7 +21,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             [
                 new Message()
                 {
-                    Text = "Ты не найден в бд. Попробуй выполнить команду /start"
+                    Text = Messages.NotFoundUser
                 }
             ];
         }
@@ -32,7 +32,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             [
                 new Message()
                 {
-                    Text = "Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
+                    Text = Messages.BalanceIsZero
                 }
             ];
         }
@@ -85,8 +85,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
 
             var messageBetToBalance = new Message()
             {
-                Text =
-                    $"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: {user.Bet}"
+                Text = Messages.BetLowerToBalance(user.Bet)
             };
 
             messages.Add(messageBetToBalance);
@@ -100,7 +99,7 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             [
                 new Message()
                 {
-                    Text = "Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру"
+                    Text = Messages.BalanceIsZero
                 }
             ];
         }

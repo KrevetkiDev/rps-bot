@@ -37,7 +37,7 @@ public class GameCommandHandlerTests
             default);
 
         // Assert
-        result.First().Text.Should().Be("Ты не найден в бд. Попробуй выполнить команду /start");
+        result.First().Text.Should().Be(Messages.NotFoundUser);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class GameCommandHandlerTests
 
         // Assert
         result.FirstOrDefault()!.Text.Should()
-            .Be("Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру");
+            .Be(Messages.BalanceIsZero);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class GameCommandHandlerTests
         // Assert
         result.Should().HaveCount(2);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
-        result[1].Text.Should().Be("Ты победил");
+        result[1].Text.Should().Be(GameResultTypes.PlayerWin.ToRuString());
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class GameCommandHandlerTests
         // Assert
         result.Count.Should().Be(2);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
-        result[1].Text.Should().Be("Бот победил");
+        result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class GameCommandHandlerTests
         // Assert
         result.Count.Should().Be(2);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
-        result[1].Text.Should().Be("Ничья");
+        result[1].Text.Should().Be(GameResultTypes.Draw.ToRuString());
     }
 
     [Fact]
@@ -161,8 +161,8 @@ public class GameCommandHandlerTests
         // Assert
         result.Count.Should().Be(3);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
-        result[1].Text.Should().Be("Бот победил");
+        result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
         result[2].Text.Should()
-            .Be($"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: 10");
+            .Be(Messages.BetLowerToBalance(10));
     }
 }

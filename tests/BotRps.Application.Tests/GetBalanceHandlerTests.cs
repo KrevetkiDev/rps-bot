@@ -32,6 +32,6 @@ public class GetBalanceHandlerTests
         var result = await _getBalanceHandler.Handle(new GetBalanceQuery() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Твой баланс: 10. Твоя ставка 10.");
+        result.Text.Should().Be(Messages.BalanceAndBet(10, 10));
     }
 }

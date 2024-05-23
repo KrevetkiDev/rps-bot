@@ -32,7 +32,7 @@ public class BetUpHandlerTests
         var result = await _betUpHandler.Handle(new BetUpCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Ты не можешь поставить больше чем у тебя есть!");
+        result.Text.Should().Be(Messages.BetCannotHigherBalance);
     }
 
     [Fact]
@@ -50,6 +50,6 @@ public class BetUpHandlerTests
         var result = await _betUpHandler.Handle(new BetUpCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Текущая ставка: 20\nДелай ход!");
+        result.Text.Should().Be(Messages.CurrentBet(20));
     }
 }

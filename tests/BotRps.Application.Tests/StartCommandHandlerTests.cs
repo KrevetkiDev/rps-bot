@@ -1,7 +1,4 @@
 ﻿using BotRpc.Domain.Entities;
-using BotRpc.Domain.Enums;
-using BotRps.Application.Common;
-using BotRps.Application.Common.Extensions;
 using BotRps.Application.Common.Interfaces;
 using BotRps.Application.Users.Commands.Start;
 using BotRps.Tests;
@@ -37,8 +34,7 @@ public class StartCommandHandlerTests
 
         // Assert
         result.Text.Should()
-            .Be(
-                $"Текущая ставка: 10. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Commands.Balance}?");
+            .Be(Messages.StartMessage(10));
     }
 
     [Fact]
@@ -64,7 +60,6 @@ public class StartCommandHandlerTests
                  && x.TelegramId == telegramId
                  && x.Nickname == "test"));
         result.Text.Should()
-            .Be(
-                $"Текущая ставка: 10. Для изменения сделай выбор в меню слева\nДелай ход: {RpsItems.Rock.ToEmoji()}, {RpsItems.Scissors.ToEmoji()}, {RpsItems.Paper.ToEmoji()}, {Commands.Balance}?");
+            .Be(Messages.StartMessage(10));
     }
 }

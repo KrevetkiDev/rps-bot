@@ -37,6 +37,6 @@ public class GetRatingHandlerTests
         var result = await _getRatingHandler.Handle(new GetRatingQuery(), default);
 
         // Assert
-        result.Text.Should().Be($"1. @test1 - 10\n2. @test2 - 10\n");
+        result.Text.Should().Be(Messages.TopUsers(userMock.ToList()));
     }
 }

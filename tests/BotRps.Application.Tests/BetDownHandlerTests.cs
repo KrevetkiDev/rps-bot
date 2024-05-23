@@ -32,7 +32,7 @@ public class BetDownHandlerTests
         var result = await _betDownHandler.Handle(new BetDownCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Ставка не может быть меньше или равна нулю!");
+        result.Text.Should().Be(Messages.BetCannotBeLessThanZero);
     }
 
     [Fact]
@@ -50,6 +50,6 @@ public class BetDownHandlerTests
         var result = await _betDownHandler.Handle(new BetDownCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be("Текущая ставка: 10\nДелай ход!");
+        result.Text.Should().Be(Messages.CurrentBet(10));
     }
 }
