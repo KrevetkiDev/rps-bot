@@ -33,7 +33,7 @@ public class GetRatingHandlerTests
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
 
         // Act
-        var result = await _getRatingHandler.Handle(new GetRatingQuery() { TelegramId = telegramId1 }, default);
+        var result = await _getRatingHandler.Handle(new GetRatingQuery(), default);
 
         // Assert
         result.Text.Should().Be($"1. @test1 - 10\n2. @test2 - 10\n");

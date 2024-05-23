@@ -25,9 +25,7 @@
     <ItemGroup>
         <ProjectReference Include="..\BotRps.Tests\BotRps.Tests.csproj"/>
         <ProjectReference Include="..\src\BotRps.Application\BotRps.Application.csproj"/>
-        <ProjectReference Include="..\src\BotRps.Bot\BotRps.Bot.csproj"/>
         <ProjectReference Include="..\src\BotRps.Domain\BotRps.Domain.csproj"/>
-        <ProjectReference Include="..\src\BotRps.Infrastructure\BotRps.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

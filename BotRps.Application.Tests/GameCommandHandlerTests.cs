@@ -26,16 +26,17 @@ public class GameCommandHandlerTests
     {
         // Arrange
         var telegramId = 1;
-        var userMock = new List<User> { }.AsEfQueryable();
+        var userMock = new List<User>().AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
 
         // Act
-        var result = await _gameHandler.Handle(new GameCommand() { TelegramId = telegramId }, default);
+        var result = await _gameHandler.Handle(new GameCommand() { TelegramId = telegramId, PlayerChoice = default },
+            default);
 
         // Assert
-        result.FirstOrDefault()!.Text.Should().Be("Ты не найден в бд. Попробуй выполнить команду /start");
+        result.First().Text.Should().Be("Ты не найден в бд. Попробуй выполнить команду /start");
     }
 
     [Fact]
@@ -57,32 +58,18 @@ public class GameCommandHandlerTests
     }
 
     [Fact]
-    public async Task GameCommandHandler_ShouldReturnUserBetIsZeroMessage_WhenUserBetIsZero()
-    {
-        // Arrange
-        var telegramId = 1;
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 0 } }.AsEfQueryable();
-        var transactionMock = Substitute.For<ITransaction<User>>();
-        transactionMock.Set.Returns(userMock);
-        _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
-
-        // Act
-        var result = await _gameHandler.Handle(new GameCommand() { TelegramId = telegramId }, default);
-
-        // Assert
-        result.FirstOrDefault()!.Text.Should().Be("Ставка не может быть равна нулю");
-    }
-
-    [Fact]
     public async Task GameCommandHandler_ShouldReturnPlayerWinMessage_WhenPlayerWin()
     {
         // Arrange
         var telegramId = 1;
         var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
+
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
         _gameService.GenerateBotChoice().Returns(RpsItems.Rock);
+
         _gameService.Game(RpsItems.Paper, RpsItems.Rock).Returns(new GameResult()
             { PlayerChoice = RpsItems.Paper, BotChoice = RpsItems.Rock, Type = GameResultTypes.PlayerWin });
 
@@ -92,8 +79,8 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
-        result.Count.Should().Be(2);
-        result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
+        result.Should().HaveCount(2);
+        result[0].Text($"{RpsItems.Rock.ToEmoji()}");
         result[1].Text.Should().Be("Ты победил");
     }
 

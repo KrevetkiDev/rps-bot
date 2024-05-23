@@ -37,17 +37,6 @@ public record GameCommandHandler(IRepository Repository, IGameService GameServic
             ];
         }
 
-        if (user.Bet == 0)
-        {
-            return
-            [
-                new Message()
-                {
-                    Text = "Ставка не может быть равна нулю"
-                }
-            ];
-        }
-
         var botChoice = GameService.GenerateBotChoice();
         var result = GameService.Game(request.PlayerChoice, botChoice);
 

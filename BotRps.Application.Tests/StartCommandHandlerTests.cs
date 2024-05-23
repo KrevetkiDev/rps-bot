@@ -21,7 +21,7 @@ public class StartCommandHandlerTests
     }
 
     [Fact]
-    public async Task StartCommandHandler_ShouldReturnWhenPlayerAlreadyExistMessage_WhenPlayerAlreadyExist()
+    public async Task StartCommandHandler_ShouldReturnWhenPlayerAlreadyExistsMessage_WhenPlayerAlreadyExists()
     {
         // Arrange
         var telegramId = 1;
