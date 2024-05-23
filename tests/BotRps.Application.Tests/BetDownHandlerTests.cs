@@ -40,8 +40,8 @@ public class BetDownHandlerTests
     {
         // Arrange
         var telegramId = 1;
-
-        var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 20 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -50,6 +50,7 @@ public class BetDownHandlerTests
         var result = await _betDownHandler.Handle(new BetDownCommand() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be(Messages.CurrentBet(10));
+        user.Bet.Should().Be(10);
+        result.Text.Should().Be(Messages.CurrentBet(user.Bet));
     }
 }

@@ -23,7 +23,8 @@ public class GetBalanceHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 10, Balance = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -32,6 +33,6 @@ public class GetBalanceHandlerTests
         var result = await _getBalanceHandler.Handle(new GetBalanceQuery() { TelegramId = telegramId }, default);
 
         // Assert
-        result.Text.Should().Be(Messages.BalanceAndBet(10, 10));
+        result.Text.Should().Be(Messages.BalanceAndBet(user.Balance, user.Bet));
     }
 }
