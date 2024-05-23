@@ -51,6 +51,7 @@ public class BetUpHandlerTests
         var result = await _betUpHandler.Handle(new BetUpCommand() { TelegramId = telegramId }, default);
 
         // Assert
+        user.Bet.Should().Be(30);
         result.Text.Should().Be(Messages.CurrentBet(user.Bet));
     }
 }

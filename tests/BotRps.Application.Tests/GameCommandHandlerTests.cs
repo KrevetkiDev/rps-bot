@@ -65,7 +65,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20, Balance = 40 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -80,6 +81,7 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
+        user.Balance.Should().Be(60);
         result.Should().HaveCount(2);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
         result[1].Text.Should().Be(GameResultTypes.PlayerWin.ToRuString());
@@ -91,7 +93,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20, Balance = 40 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -106,7 +109,8 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
-        result.Count.Should().Be(2);
+        user.Balance.Should().Be(20);
+        result.Should().HaveCount(2);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
         result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
     }
@@ -117,7 +121,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -132,7 +137,8 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
-        result.Count.Should().Be(2);
+        result.Should().HaveCount(2);
+        user.Balance.Should().Be(20);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
         result[1].Text.Should().Be(GameResultTypes.Draw.ToRuString());
     }
@@ -160,7 +166,7 @@ public class GameCommandHandlerTests
 
 
         // Assert
-        result.Count.Should().Be(3);
+        result.Should().HaveCount(3);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
         result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
         result[2].Text.Should()
