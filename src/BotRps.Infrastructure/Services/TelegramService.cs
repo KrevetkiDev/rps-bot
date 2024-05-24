@@ -60,10 +60,13 @@ public class TelegramService : ITelegramService, IHostedService
     {
         await _client.SetMyCommandsAsync(_commands, cancellationToken: cancellationToken);
         _client.StartReceiving(UpdateHandler, PollingErrorHandler, cancellationToken: cancellationToken);
+
+        _logger.LogInformation("Telegram Service started");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Telegram Service stopped");
         return Task.CompletedTask;
     }
 
@@ -72,6 +75,7 @@ public class TelegramService : ITelegramService, IHostedService
         try
         {
             var message = update.Message;
+            _logger.LogInformation("Received message {Message}", message);
 
             if (message != null)
             {
@@ -109,6 +113,7 @@ public class TelegramService : ITelegramService, IHostedService
     private Task PollingErrorHandler(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)
     {
+        _logger.LogError(exception, "Telegram client error");
         return Task.CompletedTask;
     }
 
@@ -120,7 +125,7 @@ public class TelegramService : ITelegramService, IHostedService
         var response = await _mediator.Send(new StartCommand(), cancellationToken: cancellationToken);
 
         await _client.SendTextMessageAsync(message.Chat.Id,
-            $"{message.Text}",
+            response.Text,
             replyMarkup: _keyboard,
             cancellationToken: cancellationToken);
     }
