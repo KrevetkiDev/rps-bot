@@ -1,3 +1,4 @@
+using BotRpc.Bot;
 using BotRps.Application;
 using BotRps.Infrastructure;
 using BotRps.Infrastructure.Persistence;
@@ -12,7 +13,8 @@ builder.Configuration
 
 builder.Services
     .AddInfrastructure(builder.Configuration)
-    .AddApplication();
+    .AddApplication()
+    .ConfigureServices();
 
 
 var app = builder.Build();
