@@ -37,7 +37,7 @@ public class GameCommandHandlerTests
             default);
 
         // Assert
-        result.First().Text.Should().Be("Ты не найден в бд. Попробуй выполнить команду /start");
+        result.First().Text.Should().Be(Messages.NotFoundUser);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class GameCommandHandlerTests
 
         // Assert
         result.FirstOrDefault()!.Text.Should()
-            .Be("Сейчас тебе не на что играть. Твой баланс скоро обновится и ты сможешь продолжить игру");
+            .Be(Messages.BalanceIsZero);
     }
 
     [Fact]
@@ -65,7 +65,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20, Balance = 40 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -80,9 +81,10 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
+        user.Balance.Should().Be(60);
         result.Should().HaveCount(2);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
-        result[1].Text.Should().Be("Ты победил");
+        result[1].Text.Should().Be(GameResultTypes.PlayerWin.ToRuString());
     }
 
     [Fact]
@@ -91,7 +93,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20, Balance = 40 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -106,9 +109,10 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
-        result.Count.Should().Be(2);
+        user.Balance.Should().Be(20);
+        result.Should().HaveCount(2);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
-        result[1].Text.Should().Be("Бот победил");
+        result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
     }
 
     [Fact]
@@ -117,7 +121,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Balance = 100, Bet = 10 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -132,9 +137,10 @@ public class GameCommandHandlerTests
                 default);
 
         // Assert
-        result.Count.Should().Be(2);
+        result.Should().HaveCount(2);
+        user.Balance.Should().Be(20);
         result[0].Text.Should().Be($"{RpsItems.Rock.ToEmoji()}");
-        result[1].Text.Should().Be("Ничья");
+        result[1].Text.Should().Be(GameResultTypes.Draw.ToRuString());
     }
 
     [Fact]
@@ -143,7 +149,8 @@ public class GameCommandHandlerTests
         // Arrange
         var telegramId = 1;
 
-        var userMock = new List<User> { new() { TelegramId = telegramId, Bet = 30, Balance = 40 } }.AsEfQueryable();
+        var user = new User { TelegramId = telegramId, Bet = 20 };
+        var userMock = new List<User> { user }.AsEfQueryable();
         var transactionMock = Substitute.For<ITransaction<User>>();
         transactionMock.Set.Returns(userMock);
         _repository.BeginTransactionAsync<User>(default).Returns(Task.FromResult(transactionMock));
@@ -159,10 +166,10 @@ public class GameCommandHandlerTests
 
 
         // Assert
-        result.Count.Should().Be(3);
+        result.Should().HaveCount(3);
         result[0].Text.Should().Be($"{RpsItems.Paper.ToEmoji()}");
-        result[1].Text.Should().Be("Бот победил");
+        result[1].Text.Should().Be(GameResultTypes.BotWin.ToRuString());
         result[2].Text.Should()
-            .Be($"Твоя ставка установлена до баланса, чтобы ты мог продолжить игру. Текущая ставка: 10");
+            .Be(Messages.BetLowerToBalance(user.Bet));
     }
 }

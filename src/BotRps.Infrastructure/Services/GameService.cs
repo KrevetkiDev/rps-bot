@@ -15,42 +15,22 @@ public class GameService : IGameService
             PlayerChoice = playerChoice,
             BotChoice = botChoice
         };
-        switch (playerChoice == RpsItems.Rock)
-        {
-            case true when botChoice == RpsItems.Scissors:
-                result.Type = GameResultTypes.PlayerWin;
-                break;
 
-            case true when botChoice == RpsItems.Paper:
+        switch (playerChoice)
+        {
+            case RpsItems.Rock when botChoice == RpsItems.Paper:
+            case RpsItems.Scissors when botChoice == RpsItems.Rock:
+            case RpsItems.Paper when botChoice == RpsItems.Scissors:
                 result.Type = GameResultTypes.BotWin;
                 break;
-        }
-
-        switch (playerChoice == RpsItems.Scissors)
-        {
-            case true when botChoice == RpsItems.Rock:
-                result.Type = GameResultTypes.BotWin;
-                break;
-
-            case true when botChoice == RpsItems.Paper:
+            case RpsItems.Rock when botChoice == RpsItems.Scissors:
+            case RpsItems.Scissors when botChoice == RpsItems.Paper:
+            case RpsItems.Paper when botChoice == RpsItems.Rock:
                 result.Type = GameResultTypes.PlayerWin;
                 break;
-        }
-
-        switch (playerChoice == RpsItems.Paper)
-        {
-            case true when botChoice == RpsItems.Rock:
-                result.Type = GameResultTypes.PlayerWin;
+            default:
+                result.Type = GameResultTypes.Draw;
                 break;
-
-            case true when botChoice == RpsItems.Scissors:
-                result.Type = GameResultTypes.BotWin;
-                break;
-        }
-
-        if (playerChoice == botChoice)
-        {
-            result.Type = GameResultTypes.Draw;
         }
 
         return result;
