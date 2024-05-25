@@ -70,12 +70,12 @@ public class TelegramService : ITelegramService, IHostedService
         {
             _logger.LogInformation("Received message {Message}", update.Message);
 
-            if (update.Message != null)
+            if (update.Message != null && update.Message.Text != null)
             {
                 var context = new PipeContext
                 {
                     TelegramId = update.Message.From!.Id,
-                    Message = update.Message.Text,
+                    Message = update.Message.Text!,
                     Username = update.Message.From.Username
                 };
 

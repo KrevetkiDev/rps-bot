@@ -20,7 +20,7 @@ public class PipeContext
     /// <summary>
     /// Текст сообщения
     /// </summary>
-    public string? Message { get; set; } = default!;
+    public string Message { get; set; } = default!;
 
     /// <summary>
     /// Коллекция для ответных сообщений
