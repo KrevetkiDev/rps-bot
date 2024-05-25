@@ -26,10 +26,8 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         return services.AddSingleton<IGameService, GameService>()
-            .AddSingleton<ITelegramService, TelegramService>()
             .AddSingleton<IResetBalanceService, ResetBalanceService>()
             .AddSingleton<IRepository, Repository>()
-            .AddHostedService<TelegramService>(p => (p.GetRequiredService<ITelegramService>() as TelegramService)!)
             .AddHostedService<ResetBalanceService>(p =>
                 (p.GetRequiredService<IResetBalanceService>() as ResetBalanceService)!);
     }

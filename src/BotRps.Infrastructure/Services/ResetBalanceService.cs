@@ -2,8 +2,6 @@
 using BotRpc.Domain.Entities;
 using BotRps.Application.Common.Interfaces;
 using BotRps.Infrastructure.Options;
-using BotRps.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,19 +11,19 @@ namespace BotRps.Infrastructure.Services;
 
 public class ResetBalanceService : IResetBalanceService, IHostedService
 {
-    private readonly IDbContextFactory<DatabaseContext> _dbContextFactory;
     private readonly Timer _timer;
     private readonly ResetBalanceOptions _options;
     private readonly IRepository _repository;
     private readonly ILogger<ResetBalanceService> _logger;
 
     public ResetBalanceService(IRepository repository,
-        IOptions<ResetBalanceOptions> options)
+        IOptions<ResetBalanceOptions> options, ILogger<ResetBalanceService> logger)
     {
         _repository = repository;
         _options = options.Value;
         _timer = new Timer(TimeSpan.FromMinutes(1));
         _timer.Elapsed += TimerOnElapsed;
+        _logger = logger;
     }
 
     private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
@@ -46,15 +44,17 @@ public class ResetBalanceService : IResetBalanceService, IHostedService
         }
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         _timer.Start();
         _logger.LogInformation("Reset balance service started");
+        return Task.CompletedTask;
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         _timer.Stop();
         _logger.LogInformation("Reset balance service stopped");
+        return Task.CompletedTask;
     }
 }

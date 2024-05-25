@@ -4,7 +4,7 @@ namespace BotRps.Application.Common;
 
 public class RpsItemParser
 {
-    public static RpsItems? ParseToRps(string playerMessage)
+    public static RpsItems? ParseToRps(string? playerMessage)
     {
         return playerMessage switch
         {
