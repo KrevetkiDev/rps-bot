@@ -27,6 +27,6 @@
 ## Запуск через Docker
 Для запуска понадобится установленный на машине докер и база данных
 ```bash
-docker run -d --restart=always --name botrps -e ConnectionStrings__Database='User ID=;Password=;Host=;Port=;Database=BotRps;' -e TelegramOptions__Token='твой токен' wxhami/botrps:latest
+docker run -d --restart=always --name todobot -e ConnectionStrings__Database='User ID=;Password=;Host=;Port=;Database=BotRps;' -e TelegramOptions__Token="твой токен" wxhami/todobot:latest
 ```
 
